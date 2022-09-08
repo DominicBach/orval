@@ -1,5 +1,5 @@
-import {MockGenerator} from "../MockGenerator";
+import {Expression} from "typescript";
 
-export interface Value<T> extends MockGenerator<T> {
-
+export interface Value {
+  getGeneratorAst(): Expression;
 }

@@ -1,14 +1,18 @@
-import {PrimitiveValue} from "./PrimitiveValue";
-import {Faker} from "@faker-js/faker";
-import {MockGeneratorFunction} from "../MockGeneratorFunction";
+import {Value} from "./Value";
+import {
+  getMinMaxRangeAst,
+  getRandomAlphanumericAst,
+  getRandomNumberAst,
+  getRandomWordAst
+} from "./AstGenerators";
 
-export class StringValue implements PrimitiveValue<string> {
-  readonly type = 'string';
+
+export class StringValue implements Value {
   readonly minLength: number;
   readonly maxLength?: number;
 
   constructor(minLength?: number, maxLength?: number) {
-    if(maxLength !== undefined && minLength !== undefined && minLength > maxLength) {
+    if (maxLength !== undefined && minLength !== undefined && minLength > maxLength) {
       this.minLength = maxLength
     } else {
       this.minLength = minLength ?? 0;
@@ -16,14 +20,12 @@ export class StringValue implements PrimitiveValue<string> {
     this.maxLength = maxLength;
   }
 
-  getMockGeneratorFunction() {
-    let generator;
-    // If bounds are specified, generate a random string
-    if(this.minLength > 0 || this.maxLength !== undefined) {
-      generator = (faker: Faker) => faker.random.alphaNumeric(faker.datatype.number({min: this.minLength, max: this.maxLength}));
-    } else {
-      generator = (faker: Faker) => faker.random.word();
+  getGeneratorAst() {
+    if (this.minLength > 0 || this.maxLength !== undefined) {
+      const getRandomLength = getRandomNumberAst(getMinMaxRangeAst(this.minLength, this.maxLength));
+      return getRandomAlphanumericAst(getRandomLength);
     }
-    return new MockGeneratorFunction<string>(generator, this);
+
+    return getRandomWordAst();
   }
 }

@@ -1,24 +1,20 @@
 import {Value} from "./Value";
-import {MockGeneratorFunction} from "../MockGeneratorFunction";
-import {Faker} from "@faker-js/faker";
+import {getArrayGeneratorAst, getMinMaxRangeAst, getRandomNumberAst} from "./AstGenerators";
 
-export class ArrayValue<T> implements Value<Array<T>> {
-  readonly items: Value<T>;
+export class ArrayValue implements Value {
+  readonly items: Value;
   readonly minItems: number;
   readonly maxItems: number;
 
-  constructor(items: Value<T>, minItems?: number, maxItems?: number) {
+  constructor(items: Value, minItems?: number, maxItems?: number) {
     this.items = items;
     this.minItems = minItems ?? 1;
     this.maxItems = maxItems ?? 10;
   }
 
-  getMockGeneratorFunction() {
-    const generator = (faker: Faker) => {
-      return Array.from({ length: faker.datatype.number({min: this.minItems, max: this.maxItems})}, () => {
-        return this.items.getMockGeneratorFunction().inlineContext()(faker);
-      })
-    }
-    return new MockGeneratorFunction(generator, this);
+  getGeneratorAst() {
+    const arrayLengthGenerator = getRandomNumberAst(getMinMaxRangeAst(this.minItems, this.maxItems));
+    const itemGenerator = this.items.getGeneratorAst();
+    return getArrayGeneratorAst(arrayLengthGenerator, itemGenerator);
   }
 }

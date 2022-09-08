@@ -1,9 +1,7 @@
-import {PrimitiveValue} from "./PrimitiveValue";
-import {Faker} from "@faker-js/faker";
-import {MockGeneratorFunction} from "../MockGeneratorFunction";
+import {Value} from "./Value";
+import {getMinMaxRangeAst, getRandomNumberAst} from "./AstGenerators";
 
-export class NumberValue implements PrimitiveValue<number> {
-  readonly type = 'number';
+export class NumberValue implements Value {
   readonly minimum?: number;
   readonly maximum?: number;
 
@@ -12,8 +10,7 @@ export class NumberValue implements PrimitiveValue<number> {
     this.maximum = (maximum !== undefined && exclusiveMaximum) ? maximum - 1 : maximum;
   }
 
-  getMockGeneratorFunction() {
-    const generator = (faker: Faker) => faker.datatype.number({min: this.minimum, max: this.maximum});
-    return new MockGeneratorFunction<number>(generator, this);
+  getGeneratorAst() {
+    return getRandomNumberAst(getMinMaxRangeAst(this.minimum, this.maximum));
   }
 }
