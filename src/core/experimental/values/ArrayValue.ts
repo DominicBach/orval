@@ -1,5 +1,10 @@
 import {Value} from "./Value";
-import {getArrayGeneratorAst, getMinMaxRangeAst, getRandomNumberAst} from "./AstGenerators";
+import {
+  getArrayGeneratorAst,
+  getLengthArgAst,
+  getMinMaxRangeAst,
+  getRandomNumberAst
+} from "./AstGenerators";
 import {factory} from "typescript";
 
 export class ArrayValue implements Value {
@@ -16,8 +21,9 @@ export class ArrayValue implements Value {
   getGeneratorAst() {
     if(this.items) {
       const arrayLengthGenerator = getRandomNumberAst(getMinMaxRangeAst(this.minItems, this.maxItems));
+      const arrayLengthArg = getLengthArgAst(arrayLengthGenerator);
       const itemGenerator = this.items.getGeneratorAst();
-      return getArrayGeneratorAst(arrayLengthGenerator, itemGenerator);
+      return getArrayGeneratorAst(arrayLengthArg, itemGenerator);
     } else {
       return factory.createArrayLiteralExpression();
     }
