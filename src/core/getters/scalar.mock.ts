@@ -11,6 +11,12 @@ import {
   resolveMockValue,
 } from '../resolvers/value.mock';
 import { getMockObject } from './object.mock';
+import {NumberValue} from "../experimental/values/NumberValue";
+import {Nullable} from "../experimental/values/Nullable";
+import {convertAstToString} from "../experimental/AstStringGenerator";
+import {BooleanValue} from "../experimental/values/BooleanValue";
+import {StringValue} from "../experimental/values/StringValue";
+import {ArrayValue} from "../experimental/values/ArrayValue";
 
 export const getMockScalar = ({
   item,
@@ -79,11 +85,15 @@ export const getMockScalar = ({
   switch (item.type) {
     case 'number':
     case 'integer': {
+      const generator = new NumberValue({
+        minimum: item.minimum,
+        maximum: item.maximum,
+        exclusiveMinimum: item.exclusiveMinimum,
+        exclusiveMaximum: item.exclusiveMaximum
+      });
+      const wrapped = item.nullable ? new Nullable(generator) : generator;
       return {
-        value: getNullable(
-          `faker.datatype.number({min: ${item.minimum}, max: ${item.maximum}})`,
-          item.nullable,
-        ),
+        value: convertAstToString(wrapped.getGeneratorAst()),
         imports: [],
         name: item.name,
       };
@@ -91,7 +101,7 @@ export const getMockScalar = ({
 
     case 'boolean': {
       return {
-        value: 'faker.datatype.boolean()',
+        value: convertAstToString(new BooleanValue().getGeneratorAst()),
         imports: [],
         name: item.name,
       };
@@ -99,7 +109,7 @@ export const getMockScalar = ({
 
     case 'array': {
       if (!item.items) {
-        return { value: '[]', imports: [], name: item.name };
+        return { value: convertAstToString(new ArrayValue().getGeneratorAst()), imports: [], name: item.name };
       }
 
       const {
@@ -164,7 +174,7 @@ export const getMockScalar = ({
     }
 
     case 'string': {
-      let value = 'faker.random.word()';
+      let value;
       let imports: GeneratorImport[] = [];
 
       if (item.enum) {
@@ -185,6 +195,8 @@ export const getMockScalar = ({
         }
 
         value = `faker.helpers.arrayElement(${enumValue})`;
+      } else {
+        value = convertAstToString(new StringValue(item.minLength, item.maxLength).getGeneratorAst());
       }
 
       return {

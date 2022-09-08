@@ -145,6 +145,7 @@ export const getResponsesMockDefinition = ({
 
       const resolvedRef = resolveRef<SchemaObject>(originalSchema, context);
 
+
       const scalar = getMockScalar({
         item: {
           name: definition,
