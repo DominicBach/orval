@@ -9,7 +9,8 @@ import {ReferenceResolver} from "./ReferenceResolver";
 import {NullValue} from "./values/NullValue";
 import {isReference} from "../../utils/is";
 import {Field} from "./Field";
-import {ObjectValue} from "./values/ObjectValue";
+import {SimpleObjectValue} from "./values/SimpleObjectValue";
+import {EnumValue} from "./values/EnumValue";
 
 export class ValueFactory {
 
@@ -27,6 +28,9 @@ export class ValueFactory {
 
     switch (schemaObject.type) {
       case 'string':
+        if(schemaObject.enum) {
+          return new EnumValue(schemaObject.enum.map(e => e.toString()));
+        }
         return new StringValue(schemaObject.minLength, schemaObject.maxLength);
       case 'boolean':
         return new BooleanValue();
@@ -45,10 +49,19 @@ export class ValueFactory {
         const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => ({
           name: key, type: this.getValue(value)
           } as Field));
-        return new ObjectValue(fields);
+        const object = new SimpleObjectValue(fields);
+        if(schemaObject.allOf) {
+          const fragments = schemaObject.allOf.map(o => this.getValue(o))
+          return object.withAllOf(fragments);
+        }
+        if(schemaObject.oneOf) {
+          const fragments = schemaObject.oneOf.map(o => this.getValue(o))
+          return object.withOneOf(fragments)
+        }
+        return object;
       case 'null':
       default:
-        return new NullValue(true)
+        return new NullValue()
     }
   }
 }
