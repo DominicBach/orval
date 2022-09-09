@@ -11,6 +11,9 @@ import { isFunction } from '../../utils/is';
 import { stringify } from '../../utils/string';
 import { getMockScalar } from '../getters/scalar.mock';
 import { resolveRef } from '../resolvers/ref';
+import {ReferenceResolver} from "../experimental/ReferenceResolver";
+import {ValueFactory} from "../experimental/ValueFactory";
+import {convertAstToString} from "../experimental/AstStringGenerator";
 
 const getMockPropertiesWithoutFunc = (properties: any, spec: OpenAPIObject) =>
   Object.entries(isFunction(properties) ? properties(spec) : properties).reduce<
@@ -145,29 +148,15 @@ export const getResponsesMockDefinition = ({
 
       const resolvedRef = resolveRef<SchemaObject>(originalSchema, context);
 
+      const resolver = new ReferenceResolver(Object.values(context.specs)[0]);
+      const valueFactory = new ValueFactory(resolver);
+      const value = valueFactory.getValue(resolvedRef.schema).getGeneratorAst();
 
-      const scalar = getMockScalar({
-        item: {
-          name: definition,
-          ...resolvedRef.schema,
-        },
-        imports,
-        mockOptions: mockOptionsWithoutFunc,
-        operationId,
-        tags,
-        context: isRef
-          ? {
-              ...context,
-              specKey: response.imports[0]?.specKey ?? context.specKey,
-            }
-          : context,
-      });
 
-      acc.imports.push(...scalar.imports);
       acc.definitions.push(
         transformer
-          ? transformer(scalar.value, response.definition.success)
-          : scalar.value.toString(),
+          ? transformer(value, response.definition.success)
+          : convertAstToString(value),
       );
 
       return acc;

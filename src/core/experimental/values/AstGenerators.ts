@@ -1,9 +1,11 @@
 import {
+  ArrowFunction,
   CallExpression,
   Expression,
   factory,
   ObjectLiteralExpression,
-  PropertyAssignment
+  PropertyAssignment,
+  SyntaxKind
 } from "typescript";
 
 /**
@@ -87,8 +89,28 @@ export function getRandomNumberAst(args?: Expression): CallExpression {
           factory.createIdentifier('number')
       ),
       undefined,
-      args? [args] : []
+      args ? [args] : []
   );
+}
+
+/**
+ * Create an arrow function with the provided expression as body `() => body`
+ *
+ * @param expression
+ */
+export function getProducerFunction(expression: Expression): ArrowFunction {
+  let wrappedExpression = expression;
+  if(expression.kind === SyntaxKind.ObjectLiteralExpression) {
+    wrappedExpression = factory.createParenthesizedExpression(expression);
+  }
+  return factory.createArrowFunction(
+      undefined,
+      undefined,
+      [],
+      undefined,
+      factory.createToken(SyntaxKind.EqualsGreaterThanToken),
+      wrappedExpression
+  )
 }
 
 /**
@@ -96,10 +118,10 @@ export function getRandomNumberAst(args?: Expression): CallExpression {
  */
 export function getMinMaxRangeAst(min?: number, max?: number): ObjectLiteralExpression {
   const props: PropertyAssignment[] = [];
-  if(min !== undefined) {
+  if (min !== undefined) {
     props.push(factory.createPropertyAssignment('min', factory.createNumericLiteral(min)))
   }
-  if(max !== undefined) {
+  if (max !== undefined) {
     props.push(factory.createPropertyAssignment('max', factory.createNumericLiteral(max)))
   }
 
@@ -111,7 +133,7 @@ export function getMinMaxRangeAst(min?: number, max?: number): ObjectLiteralExpr
  */
 export function getLengthArgAst(length: Expression) {
   return factory.createObjectLiteralExpression([
-      factory.createPropertyAssignment('length', length)
+    factory.createPropertyAssignment('length', length)
   ]);
 }
 

@@ -1,6 +1,7 @@
 import {Value} from "./Value";
 import {getRandomArrayElementAst} from "./AstGenerators";
 import {factory} from "typescript";
+import {NullValue} from "./NullValue";
 
 export class Nullable<T extends Value> implements Value {
 
@@ -13,7 +14,7 @@ export class Nullable<T extends Value> implements Value {
   getGeneratorAst() {
     const valueOrNull = factory.createArrayLiteralExpression([
         this.value.getGeneratorAst(),
-        factory.createNull()
+        new NullValue().getGeneratorAst()
     ])
     return getRandomArrayElementAst(valueOrNull)
   }
