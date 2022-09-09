@@ -12,7 +12,8 @@ export class ObjectValue implements Value {
   getGeneratorAst() {
     const props: PropertyAssignment[] = [];
     for (const field of this.fields) {
-      props.push(factory.createPropertyAssignment(field.name, field.type.getGeneratorAst()))
+      const keyString = factory.createStringLiteral(field.name, true);
+      props.push(factory.createPropertyAssignment(keyString, field.type.getGeneratorAst()))
     }
     return factory.createObjectLiteralExpression(props)
   }

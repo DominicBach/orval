@@ -8,6 +8,8 @@ import {ArrayValue} from "./values/ArrayValue";
 import {ReferenceResolver} from "./ReferenceResolver";
 import {NullValue} from "./values/NullValue";
 import {isReference} from "../../utils/is";
+import {Field} from "./Field";
+import {ObjectValue} from "./values/ObjectValue";
 
 export class ValueFactory {
 
@@ -40,6 +42,10 @@ export class ValueFactory {
         const itemsSchema = schemaObject.items ? this.getValue(schemaObject.items) : schemaObject.items;
         return new ArrayValue(itemsSchema, schemaObject.minItems, schemaObject.maxItems);
       case 'object':
+        const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => ({
+          name: key, type: this.getValue(value)
+          } as Field));
+        return new ObjectValue(fields);
       case 'null':
       default:
         return new NullValue(true)
