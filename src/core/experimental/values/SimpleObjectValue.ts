@@ -3,19 +3,32 @@ import {Field} from "../Field";
 import {factory, PropertyAssignment} from "typescript";
 import {ObjectValue} from "./ObjectValue";
 import {PolymorphicObjectValue} from "./PolymorphicObjectValue";
+import {Maybe} from "./Maybe";
 
 export class SimpleObjectValue implements ObjectValue {
-  readonly fields: Field[];
+  readonly fields: Map<string, Field>
 
-  constructor(fields: Field[]) {
-    this.fields = fields;
+  constructor(fields: Field[] | Map<string, Field>) {
+    if(Array.isArray(fields)) {
+      this.fields = fields.reduce((map, field) => {
+        map.set(field.name, field);
+        return map;
+      }, new Map<string, Field>())
+    } else {
+      this.fields = new Map(fields);
+    }
   }
 
   getGeneratorAst() {
     const props: PropertyAssignment[] = [];
-    for (const field of this.fields) {
+    for (const field of this.fields.values()) {
+      // Create keys as strings in case some identifiers have special characters
       const keyString = factory.createStringLiteral(field.name, true);
-      props.push(factory.createPropertyAssignment(keyString, field.type.getGeneratorAst()))
+      if(field.required) {
+        props.push(factory.createPropertyAssignment(keyString, field.type.getGeneratorAst()))
+      } else {
+        props.push(factory.createPropertyAssignment(keyString, new Maybe(field.type).getGeneratorAst()))
+      }
     }
     return factory.createObjectLiteralExpression(props)
   }
@@ -40,11 +53,10 @@ export class SimpleObjectValue implements ObjectValue {
     .filter((value): value is SimpleObjectValue => 'fields' in value) // Just ignore non-object values
     .flatMap(value => value.fields)
 
-    const merged = [...this.fields];
-    // When evaluating allOf, the last declaration appears to take precedence
-    for(const field of fragmentFields.reverse()) {
-      if(!merged.find(f => f.name === field.name)) {
-        merged.push(field)
+    const merged = new Map(this.fields);
+    for(const fieldSet of fragmentFields) {
+      for(const [key,value] of fieldSet) {
+        merged.set(key, value);
       }
     }
     return new SimpleObjectValue(merged);

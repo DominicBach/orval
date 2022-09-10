@@ -9,6 +9,23 @@ import {
 } from "typescript";
 
 /**
+ * AST for `faker.helpers.maybe(producer)`
+ */
+export function getMaybeAst(producer: ArrowFunction, config?: ObjectLiteralExpression) {
+  return factory.createCallExpression(
+      factory.createPropertyAccessExpression(
+          factory.createPropertyAccessExpression(
+              factory.createIdentifier('faker'),
+              factory.createIdentifier('helpers')
+          ),
+          factory.createIdentifier('maybe')
+      ),
+      undefined,
+      config ? [producer, config] : [producer]
+  )
+}
+
+/**
  * AST for `faker.helpers.arrayElement(array)`
  */
 export function getRandomArrayElementAst(array: Expression) {

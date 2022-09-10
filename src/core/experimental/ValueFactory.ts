@@ -28,41 +28,57 @@ export class ValueFactory {
 
     switch (schemaObject.type) {
       case 'string':
-        if(schemaObject.enum) {
-          return new EnumValue(schemaObject.enum.map(e => e.toString()));
-        }
-        return new StringValue(schemaObject.minLength, schemaObject.maxLength);
+        return this.getString(schemaObject);
       case 'boolean':
         return new BooleanValue();
       case "integer":
       case "number":
-        return new NumberValue({
-          minimum: schemaObject.minimum,
-          maximum: schemaObject.maximum,
-          exclusiveMinimum: schemaObject.exclusiveMinimum,
-          exclusiveMaximum: schemaObject.exclusiveMaximum
-        });
+        return this.getNumber(schemaObject);
       case 'array':
-        const itemsSchema = schemaObject.items ? this.getValue(schemaObject.items) : schemaObject.items;
-        return new ArrayValue(itemsSchema, schemaObject.minItems, schemaObject.maxItems);
+        return this.getArray(schemaObject);
       case 'object':
-        const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => ({
-          name: key, type: this.getValue(value)
-          } as Field));
-        const object = new SimpleObjectValue(fields);
-        if(schemaObject.allOf) {
-          const fragments = schemaObject.allOf.map(o => this.getValue(o))
-          return object.withAllOf(fragments);
-        }
-        if(schemaObject.oneOf) {
-          const fragments = schemaObject.oneOf.map(o => this.getValue(o))
-          return object.withOneOf(fragments)
-        }
-        return object;
+        return this.getObject(schemaObject);
       case 'null':
       default:
         return new NullValue()
     }
+  }
+
+  private getObject(schemaObject: SchemaObject) {
+    const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => ({
+      name: key, type: this.getValue(value), required: schemaObject.required?.includes(key)
+    } as Field));
+    let object = new SimpleObjectValue(fields);
+    if (schemaObject.allOf) {
+      const fragments = schemaObject.allOf.map(o => this.getValue(o))
+      object = object.withAllOf(fragments);
+    }
+    if (schemaObject.oneOf) {
+      const fragments = schemaObject.oneOf.map(o => this.getValue(o))
+      return object.withOneOf(fragments)
+    }
+    return object;
+  }
+
+  private getArray(schemaObject: SchemaObject) {
+    const itemsSchema = schemaObject.items ? this.getValue(schemaObject.items) : schemaObject.items;
+    return new ArrayValue(itemsSchema, schemaObject.minItems, schemaObject.maxItems);
+  }
+
+  private getNumber(schemaObject: SchemaObject) {
+    return new NumberValue({
+      minimum: schemaObject.minimum,
+      maximum: schemaObject.maximum,
+      exclusiveMinimum: schemaObject.exclusiveMinimum,
+      exclusiveMaximum: schemaObject.exclusiveMaximum
+    });
+  }
+
+  private getString(schemaObject: SchemaObject) {
+    if (schemaObject.enum) {
+      return new EnumValue(schemaObject.enum.map(e => e.toString()));
+    }
+    return new StringValue(schemaObject.minLength, schemaObject.maxLength);
   }
 }
 
