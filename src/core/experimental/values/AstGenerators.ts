@@ -113,19 +113,48 @@ export function getProducerFunction(expression: Expression): ArrowFunction {
   )
 }
 
-/**
- * AST for object literal of shape { min?: number, max?: number}
- */
-export function getMinMaxRangeAst(min?: number, max?: number): ObjectLiteralExpression {
-  const props: PropertyAssignment[] = [];
-  if (min !== undefined) {
-    props.push(factory.createPropertyAssignment('min', factory.createNumericLiteral(min)))
-  }
-  if (max !== undefined) {
-    props.push(factory.createPropertyAssignment('max', factory.createNumericLiteral(max)))
-  }
+type SimpleType = string | boolean | number | null | undefined;
+interface SimpleObject<T> {
+  [key: string]: SimpleType | T
+}
+interface NestableSimpleObject extends SimpleObject<NestableSimpleObject> {}
 
+/**
+ * Convert an object into AST that generates a literal of that object.
+ *
+ * @param object The object to generate AST of
+ * @param excludeUndefined If true, object keys with a value of undefined will be omitted instead of explicitly declared undefined
+ */
+export function getObjectLiteralAst(object: NestableSimpleObject, excludeUndefined = false): ObjectLiteralExpression {
+  const props: PropertyAssignment[] = [];
+  for(const [key, value] of Object.entries(object)) {
+    if(excludeUndefined && value === undefined) {
+      continue;
+    }
+    if(typeof value === 'object' && value !== null) {
+      props.push(factory.createPropertyAssignment(key, getObjectLiteralAst(value)))
+    } else {
+      props.push(factory.createPropertyAssignment(key, getSimpleTypeLiteral(value)))
+    }
+  }
   return factory.createObjectLiteralExpression(props);
+}
+
+export function getSimpleTypeLiteral(value: SimpleType) {
+  if(value === null) {
+    return factory.createNull();
+  }
+  switch (typeof value) {
+    case 'string':
+      return factory.createStringLiteral(value);
+    case "boolean":
+      return value ? factory.createTrue() : factory.createFalse();
+    case "number":
+      return factory.createNumericLiteral(value);
+    case 'undefined':
+    default:
+      return factory.createIdentifier('undefined');
+  }
 }
 
 /**

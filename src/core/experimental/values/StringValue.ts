@@ -1,6 +1,6 @@
 import {Value} from "./Value";
 import {
-  getMinMaxRangeAst,
+  getObjectLiteralAst,
   getRandomAlphanumericAst,
   getRandomNumberAst,
   getRandomWordAst
@@ -22,7 +22,10 @@ export class StringValue implements Value {
 
   getGeneratorAst() {
     if (this.minLength > 0 || this.maxLength !== undefined) {
-      const getRandomLength = getRandomNumberAst(getMinMaxRangeAst(this.minLength, this.maxLength));
+      const getRandomLength = getRandomNumberAst(getObjectLiteralAst({
+        min: this.minLength,
+        max: this.maxLength
+      }, true));
       return getRandomAlphanumericAst(getRandomLength);
     }
 
