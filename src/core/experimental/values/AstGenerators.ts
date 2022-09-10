@@ -157,13 +157,17 @@ export function getSimpleTypeLiteral(value: SimpleType) {
   }
 }
 
+type ExpressionObject = Record<string, Expression>;
+
 /**
- * AST for object literal of shape `{ length: Expression}`
+ * Get an object literal with property assignments for each key-value pair.
+ *
+ * @param object The object representing the property assignments.
  */
-export function getLengthArgAst(length: Expression) {
-  return factory.createObjectLiteralExpression([
-    factory.createPropertyAssignment('length', length)
-  ]);
+export function getExpressionObjectAst(object: ExpressionObject): ObjectLiteralExpression {
+  const props = Object.entries(object)
+  .map(([key,value]) => factory.createPropertyAssignment(key, value))
+  return factory.createObjectLiteralExpression(props);
 }
 
 /**

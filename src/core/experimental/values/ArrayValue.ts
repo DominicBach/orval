@@ -1,7 +1,7 @@
 import {Value} from "./Value";
 import {
   getArrayGeneratorAst,
-  getLengthArgAst,
+  getExpressionObjectAst,
   getObjectLiteralAst,
   getProducerFunction,
   getRandomNumberAst
@@ -25,7 +25,7 @@ export class ArrayValue implements Value {
         min: this.minItems,
         max: this.maxItems
       }, true));
-      const arrayLengthArg = getLengthArgAst(arrayLengthGenerator);
+      const arrayLengthArg = getExpressionObjectAst({length: arrayLengthGenerator});
       const itemGenerator = getProducerFunction(this.items.getGeneratorAst());
       return getArrayGeneratorAst(arrayLengthArg, itemGenerator);
     } else {
