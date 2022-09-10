@@ -3,7 +3,7 @@ info:
   title: API
   version: V1
 paths:
-  /demo:
+  /oneOf:
     get:
       operationId: getPolymorphicResponse
       responses:
@@ -16,6 +16,27 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DescendantOne'
                   - $ref: '#/components/schemas/DescendantTwo'
+  /anyOf:
+    get:
+      operationId: getPolymorphicResponse
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                required: ['foo']
+                anyOf:
+                  - $ref: '#/components/schemas/MergedTypeOne'
+                  - $ref: '#/components/schemas/MergedTypeTwo'
+                properties:
+                  foo:
+                    type: string
+                  bar:
+                    type: string
+                  baz:
+                    type: string
 components:
   schemas:
     DescendantOne:
@@ -48,3 +69,23 @@ components:
             - STRING
       discriminator:
         propertyName: type
+    MergedTypeOne:
+      type: object
+      required: ['a']
+      properties:
+        a:
+          type: string
+        b:
+          type: string
+        c:
+          type: string
+    MergedTypeTwo:
+      type: object
+      required: ['one']
+      properties:
+        one:
+          type: string
+        two:
+          type: string
+        three:
+          type: string

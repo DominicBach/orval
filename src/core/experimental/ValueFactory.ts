@@ -53,6 +53,10 @@ export class ValueFactory {
       const fragments = schemaObject.allOf.map(o => this.getValue(o))
       object = object.withAllOf(fragments);
     }
+    if(schemaObject.anyOf) {
+      const fragments = schemaObject.anyOf.map(o => this.getValue(o))
+      return object.withAnyOf(fragments);
+    }
     if (schemaObject.oneOf) {
       const fragments = schemaObject.oneOf.map(o => this.getValue(o))
       return object.withOneOf(fragments)
