@@ -65,7 +65,7 @@ export class ValueFactory {
   }
 
   private getArray(schemaObject: SchemaObject) {
-    const itemsSchema = schemaObject.items ? this.getValue(schemaObject.items) : schemaObject.items;
+    const itemsSchema = schemaObject.items !== undefined ? this.getValue(schemaObject.items) : undefined;
     return new ArrayValue(itemsSchema, schemaObject.minItems, schemaObject.maxItems);
   }
 
