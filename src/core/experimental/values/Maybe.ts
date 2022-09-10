@@ -1,5 +1,5 @@
 import {Value} from "./Value";
-import {getMaybeAst, getObjectLiteralAst, getProducerFunction} from "./AstGenerators";
+import {getMaybeAst, getObjectLiteralAst, getProducerFunction} from "../AstGenerators";
 
 export class Maybe<T extends Value> implements Value {
   readonly value: T;

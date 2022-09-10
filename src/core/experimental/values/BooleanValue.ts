@@ -1,5 +1,5 @@
 import {Value} from "./Value";
-import {getRandomBooleanAst} from "./AstGenerators";
+import {getRandomBooleanAst} from "../AstGenerators";
 
 export class BooleanValue implements Value {
 

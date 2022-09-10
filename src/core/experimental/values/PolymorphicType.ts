@@ -1,6 +1,6 @@
 import {ObjectValue} from "./ObjectValue";
 import {Expression, factory} from "typescript";
-import {getRandomArrayElementAst} from "./AstGenerators";
+import {getRandomArrayElementAst} from "../AstGenerators";
 import {Value} from "./Value";
 
 export class PolymorphicType implements ObjectValue {

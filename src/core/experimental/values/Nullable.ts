@@ -1,5 +1,5 @@
 import {Value} from "./Value";
-import {getRandomArrayElementAst} from "./AstGenerators";
+import {getRandomArrayElementAst} from "../AstGenerators";
 import {factory} from "typescript";
 import {NullValue} from "./NullValue";
 

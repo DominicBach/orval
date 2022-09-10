@@ -4,7 +4,7 @@ import {
   getRandomAlphanumericAst,
   getRandomNumberAst,
   getRandomWordAst
-} from "./AstGenerators";
+} from "../AstGenerators";
 
 
 export class StringValue implements Value {

@@ -1,6 +1,6 @@
 import {Value} from "./Value";
 import {factory} from "typescript";
-import {getRandomArrayElementAst} from "./AstGenerators";
+import {getRandomArrayElementAst} from "../AstGenerators";
 
 export class EnumValue implements Value {
 

@@ -5,7 +5,7 @@ import {
   getObjectLiteralAst,
   getProducerFunction,
   getRandomNumberAst
-} from "./AstGenerators";
+} from "../AstGenerators";
 import {factory} from "typescript";
 
 export class ArrayValue implements Value {

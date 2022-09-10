@@ -1,5 +1,5 @@
 import {Value} from "./Value";
-import {getObjectLiteralAst, getRandomNumberAst} from "./AstGenerators";
+import {getObjectLiteralAst, getRandomNumberAst} from "../AstGenerators";
 
 export interface NumberValueValidations {
   minimum?: number,
