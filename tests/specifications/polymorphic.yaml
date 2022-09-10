@@ -3,9 +3,34 @@ info:
   title: API
   version: V1
 paths:
+  /combine:
+    get:
+      operationId: getMultiCombineResponse
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                oneOf:
+                  - $ref: '#/components/schemas/MergedTypeOne'
+                  - $ref: '#/components/schemas/MergedTypeTwo'
+                anyOf:
+                  - $ref: '#/components/schemas/MergedTypeThree'
+                  - $ref: '#/components/schemas/MergedTypeFour'
+                allOf:
+                  - $ref: '#/components/schemas/DescendantOne'
+                properties:
+                  foo:
+                    type: string
+                  bar:
+                    type: string
+                  baz:
+                    type: string
   /oneOf:
     get:
-      operationId: getPolymorphicResponse
+      operationId: getOneOfResponse
       responses:
         '200':
           description: ''
@@ -18,7 +43,7 @@ paths:
                   - $ref: '#/components/schemas/DescendantTwo'
   /anyOf:
     get:
-      operationId: getPolymorphicResponse
+      operationId: getAnyOfResponse
       responses:
         '200':
           description: ''
@@ -88,4 +113,24 @@ components:
         two:
           type: string
         three:
+          type: string
+    MergedTypeThree:
+      type: object
+      required: ['d']
+      properties:
+        d:
+          type: string
+        e:
+          type: string
+        f:
+          type: string
+    MergedTypeFour:
+      type: object
+      required: ['four']
+      properties:
+        four:
+          type: string
+        five:
+          type: string
+        six:
           type: string
