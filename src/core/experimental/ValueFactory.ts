@@ -46,9 +46,9 @@ export class ValueFactory {
   }
 
   private getObject(schemaObject: SchemaObject) {
-    const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => ({
-      name: key, type: this.getValue(value), required: schemaObject.required?.includes(key)
-    } as Field));
+    const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => (
+        new Field(key, this.getValue(value), !!schemaObject.required?.includes(key))
+    ));
     let object: ObjectValue = new SimpleObjectValue(fields);
     if (schemaObject.allOf) {
       const fragments = schemaObject.allOf.map(o => this.getValue(o))

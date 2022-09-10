@@ -3,7 +3,6 @@ import {Field} from "../Field";
 import {factory, PropertyAssignment} from "typescript";
 import {ObjectValue} from "./ObjectValue";
 import {PolymorphicType} from "./PolymorphicType";
-import {Maybe} from "./Maybe";
 
 export class SimpleObjectValue implements ObjectValue {
   readonly fields: Map<string, Field>
@@ -23,13 +22,7 @@ export class SimpleObjectValue implements ObjectValue {
   getGeneratorAst() {
     const props: PropertyAssignment[] = [];
     for (const field of this.fields.values()) {
-      // Create keys as strings in case some identifiers have special characters
-      const keyString = factory.createStringLiteral(field.name, true);
-      if(field.required) {
-        props.push(factory.createPropertyAssignment(keyString, field.type.getGeneratorAst()))
-      } else {
-        props.push(factory.createPropertyAssignment(keyString, new Maybe(field.type).getGeneratorAst()))
-      }
+      props.push(field.getFieldAssignmentAst())
     }
     return factory.createObjectLiteralExpression(props)
   }
@@ -109,7 +102,7 @@ export class SimpleObjectValue implements ObjectValue {
    */
   partial() {
     const optionalFields = Array.from(this.fields.values())
-    .map(f => ({...f, required: false}));
+    .map(f => f.optional());
     return new SimpleObjectValue(optionalFields);
   }
 }
