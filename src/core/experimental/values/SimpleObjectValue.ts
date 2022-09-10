@@ -2,7 +2,7 @@ import {Value} from "./Value";
 import {Field} from "../Field";
 import {factory, PropertyAssignment} from "typescript";
 import {ObjectValue} from "./ObjectValue";
-import {TypeList} from "./TypeList";
+import {PolymorphicType} from "./PolymorphicType";
 import {Maybe} from "./Maybe";
 
 export class SimpleObjectValue implements ObjectValue {
@@ -49,14 +49,14 @@ export class SimpleObjectValue implements ObjectValue {
    *
    * @param fragments The object fragments. Non-object values are ignored
    */
-  withAllOf(fragments: Value[]) {
+  withAllOf(fragments: Value[]): SimpleObjectValue {
     const fragmentFields = fragments
     .filter((value): value is SimpleObjectValue => 'fields' in value) // Just ignore non-object values
     .flatMap(value => value.fields)
 
     const merged = new Map(this.fields);
-    for(const fieldSet of fragmentFields) {
-      for(const [key,value] of fieldSet) {
+    for (const fieldSet of fragmentFields) {
+      for (const [key, value] of fieldSet) {
         merged.set(key, value);
       }
     }
@@ -68,11 +68,11 @@ export class SimpleObjectValue implements ObjectValue {
    *
    * @param fragments
    */
-  withOneOf(fragments: Value[]) {
+  withOneOf(fragments: Value[]): PolymorphicType {
     const extendedFragments = fragments
     .filter((value): value is SimpleObjectValue => 'fields' in value)
     .map(value => value.withAllOf([this]))
-    return new TypeList(extendedFragments);
+    return new PolymorphicType(extendedFragments);
   }
 
   /**
@@ -85,15 +85,15 @@ export class SimpleObjectValue implements ObjectValue {
    *
    * @param fragments
    */
-  withAnyOf(fragments: Value[]) {
+  withAnyOf(fragments: Value[]): PolymorphicType {
     // First, merge the subtypes with the properties of this object
-    const subtypes = this.withOneOf(fragments).types;
+    const subtypes = this.withOneOf(fragments).subtypes;
     // Then, to produce the union representation, for each subtype, merge the fields of the other subtypes as optional fields.
-    const mergedTypes: SimpleObjectValue[] = [];
-    for(let i = 0; i < subtypes.length; i++) {
+    const mergedTypes: ObjectValue[] = [];
+    for (let i = 0; i < subtypes.length; i++) {
       let mergedType = subtypes[i];
-      for(let j = 0; j < subtypes.length; j++) {
-        if(j === i) {
+      for (let j = 0; j < subtypes.length; j++) {
+        if (j === i) {
           continue; // Don't merge the type with itself.
         }
         // Merge *into* subtype because of precedence rules favoring fields defined later
@@ -101,7 +101,7 @@ export class SimpleObjectValue implements ObjectValue {
       }
       mergedTypes.push(mergedType);
     }
-    return new TypeList(mergedTypes);
+    return new PolymorphicType(mergedTypes);
   }
 
   /**

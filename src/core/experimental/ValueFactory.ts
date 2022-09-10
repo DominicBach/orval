@@ -11,6 +11,7 @@ import {isReference} from "../../utils/is";
 import {Field} from "./Field";
 import {SimpleObjectValue} from "./values/SimpleObjectValue";
 import {EnumValue} from "./values/EnumValue";
+import {ObjectValue} from "./values/ObjectValue";
 
 export class ValueFactory {
 
@@ -48,18 +49,18 @@ export class ValueFactory {
     const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => ({
       name: key, type: this.getValue(value), required: schemaObject.required?.includes(key)
     } as Field));
-    let object = new SimpleObjectValue(fields);
+    let object: ObjectValue = new SimpleObjectValue(fields);
     if (schemaObject.allOf) {
       const fragments = schemaObject.allOf.map(o => this.getValue(o))
       object = object.withAllOf(fragments);
     }
     if(schemaObject.anyOf) {
       const fragments = schemaObject.anyOf.map(o => this.getValue(o))
-      return object.withAnyOf(fragments);
+      object = object.withAnyOf(fragments);
     }
     if (schemaObject.oneOf) {
       const fragments = schemaObject.oneOf.map(o => this.getValue(o))
-      return object.withOneOf(fragments)
+      object = object.withOneOf(fragments)
     }
     return object;
   }
