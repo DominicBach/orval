@@ -62,7 +62,7 @@ export function getRandomWordAst(): CallExpression {
 /**
  * AST for `faker.random.alphaNumeric(args)`
  */
-export function getRandomAlphanumericAst(args: Expression): CallExpression {
+export function getRandomAlphanumericAst(args?: Expression): CallExpression {
   return factory.createCallExpression(
       factory.createPropertyAccessExpression(
           factory.createPropertyAccessExpression(
@@ -72,7 +72,7 @@ export function getRandomAlphanumericAst(args: Expression): CallExpression {
           factory.createIdentifier('alphaNumeric')
       ),
       undefined,
-      args ? [args] : args
+      args ? [args] : []
   )
 }
 
