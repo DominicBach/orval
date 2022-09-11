@@ -9,6 +9,7 @@ import {resolveRef} from '../resolvers/ref';
 import {ReferenceResolver} from "../experimental/ReferenceResolver";
 import {ValueFactory} from "../experimental/ValueFactory";
 import {convertAstToString} from "../experimental/AstStringGenerator";
+import {FormattedStringFactory} from "../experimental/FormattedStringFactory";
 
 const getMockPropertiesWithoutFunc = (properties: any, spec: OpenAPIObject) =>
   Object.entries(isFunction(properties) ? properties(spec) : properties).reduce<
@@ -144,7 +145,8 @@ export const getResponsesMockDefinition = ({
       const resolvedRef = resolveRef<SchemaObject>(originalSchema, context);
 
       const resolver = new ReferenceResolver(Object.values(context.specs)[0]);
-      const valueFactory = new ValueFactory(resolver);
+      const formattedStringFactory = new FormattedStringFactory();
+      const valueFactory = new ValueFactory(resolver, formattedStringFactory);
       const value = valueFactory.getValue(resolvedRef.schema).getGeneratorAst();
 
 

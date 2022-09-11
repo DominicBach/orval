@@ -12,16 +12,19 @@ import {Field} from "./Field";
 import {SimpleObjectValue} from "./values/SimpleObjectValue";
 import {EnumValue} from "./values/EnumValue";
 import {ObjectValue} from "./values/ObjectValue";
+import {FormattedStringFactory, FormatHints} from "./FormattedStringFactory";
 
 export class ValueFactory {
 
-  private referenceResolver;
+  private readonly referenceResolver;
+  private readonly formattedStringFactory;
 
-  constructor(referenceResolver: ReferenceResolver) {
+  constructor(referenceResolver: ReferenceResolver, formattedStringFactory: FormattedStringFactory) {
     this.referenceResolver = referenceResolver;
+    this.formattedStringFactory = formattedStringFactory;
   }
 
-  getValue(item: SchemaObject | ReferenceObject): Value {
+  getValue(item: SchemaObject | ReferenceObject, hints?: FormatHints): Value {
     const schemaObject = isReference(item) ? this.referenceResolver.resolve(item) : item;
 
     if (schemaObject.nullable)
@@ -29,7 +32,7 @@ export class ValueFactory {
 
     switch (schemaObject.type) {
       case 'string':
-        return this.getString(schemaObject);
+        return this.getString(schemaObject, hints);
       case 'boolean':
         return new BooleanValue();
       case "integer":
@@ -47,7 +50,7 @@ export class ValueFactory {
 
   private getObject(schemaObject: SchemaObject) {
     const fields = Object.entries(schemaObject.properties ?? {}).map(([key, value]) => (
-        new Field(key, this.getValue(value), !!schemaObject.required?.includes(key))
+        new Field(key, this.getValue(value, {keyName: key}), !!schemaObject.required?.includes(key))
     ));
     let object: ObjectValue = new SimpleObjectValue(fields);
     if (schemaObject.allOf) {
@@ -79,11 +82,15 @@ export class ValueFactory {
     });
   }
 
-  private getString(schemaObject: SchemaObject) {
+  private getString(schemaObject: SchemaObject, hints?: FormatHints) {
     if (schemaObject.enum) {
       return new EnumValue(schemaObject.enum.map(e => e.toString()));
     }
-    return new StringValue(schemaObject.minLength, schemaObject.maxLength);
+    return new StringValue(
+        this.formattedStringFactory,
+        { format: schemaObject.format, ...hints},
+        schemaObject.minLength,
+        schemaObject.maxLength);
   }
 }
 

@@ -119,18 +119,20 @@ components:
       required: ['d']
       properties:
         d:
+          format: date-time
           type: string
         e:
+          format: date
           type: string
-        f:
+        firstName:
           type: string
     MergedTypeFour:
       type: object
       required: ['four']
       properties:
-        four:
+        last_name:
           type: string
-        five:
+        uuid:
           type: string
         six:
           type: string

@@ -94,6 +94,8 @@ export const fakerGenerator = {
     lastName() {
       return toCallExpression("faker.name.lastName");
     },
+  },
+  phone: {
     phoneNumber() {
       return toCallExpression("faker.phone.phoneNumber");
     }
