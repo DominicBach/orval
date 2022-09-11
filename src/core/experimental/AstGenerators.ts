@@ -7,17 +7,32 @@ import {
   SyntaxKind
 } from "typescript";
 
+/**
+ * Convert a string into a call expression with the provided args.
+ *
+ * The string should be a simple identifier or property access string
+ * e.g. `foo` or `foo.bar.baz`.
+ *
+ * Arguments will be passed in order to the call expression.
+ * Optional args at the end of the args array which are undefined will be removed
+ *
+ * @param expression The string representing the call expression
+ * @param args The arguments to the call
+ */
 export function toCallExpression(expression: string, ...args: Array<Expression | SimpleType>) {
   const identifiers = expression.split('.')
   .map(identifier => factory.createIdentifier(identifier));
 
-  let accessExpression = factory.createPropertyAccessExpression(
-      identifiers[0], identifiers[1]
-  );
-  for (let i = 2; i < identifiers.length; i++) {
+  let accessExpression: Expression = identifiers[0];
+  if(identifiers.length > 1) {
     accessExpression = factory.createPropertyAccessExpression(
-        accessExpression, identifiers[i]
-    )
+        identifiers[0], identifiers[1]
+    );
+    for (let i = 2; i < identifiers.length; i++) {
+      accessExpression = factory.createPropertyAccessExpression(
+          accessExpression, identifiers[i]
+      )
+    }
   }
 
   let simplifiedArgs: typeof args = [];
@@ -29,7 +44,7 @@ export function toCallExpression(expression: string, ...args: Array<Expression |
     }
   }
 
-  // Convert any remaining 'undefined' args to the undefined identifier expression
+  // Convert any simple type arguments to expressions
   const expressionArgs = simplifiedArgs.map(arg => {
     if (typeof arg === 'object' && arg !== null) {
       return arg;
