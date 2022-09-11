@@ -1,10 +1,5 @@
 import {Value} from "./Value";
-import {
-  getObjectLiteralAst,
-  getRandomAlphanumericAst,
-  getRandomNumberAst,
-  getRandomWordAst
-} from "../AstGenerators";
+import {fakerGenerator} from "../FakerGenerator";
 
 
 export class StringValue implements Value {
@@ -22,13 +17,12 @@ export class StringValue implements Value {
 
   getGeneratorAst() {
     if (this.minLength > 0 || this.maxLength !== undefined) {
-      const getRandomLength = getRandomNumberAst(getObjectLiteralAst({
-        min: this.minLength,
-        max: this.maxLength
-      }, true));
-      return getRandomAlphanumericAst(getRandomLength);
+      return fakerGenerator.random.alphaNumeric(
+          fakerGenerator.datatype.number({
+            min: this.minLength,
+            max: this.maxLength
+          }));
     }
-
-    return getRandomWordAst();
+    return fakerGenerator.random.word();
   }
 }

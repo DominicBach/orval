@@ -1,5 +1,6 @@
 import {Value} from "./Value";
-import {getMaybeAst, getObjectLiteralAst, getProducerFunction} from "../AstGenerators";
+import {getProducerFunction} from "../AstGenerators";
+import {fakerGenerator} from "../FakerGenerator";
 
 export class Maybe<T extends Value> implements Value {
   readonly value: T;
@@ -13,8 +14,8 @@ export class Maybe<T extends Value> implements Value {
   getGeneratorAst() {
     const producer = getProducerFunction(this.value.getGeneratorAst());
     if (this.probability)
-      return getMaybeAst(producer, getObjectLiteralAst({probability: this.probability}));
+      return fakerGenerator.helpers.maybe(producer, { probability: this.probability })
     else
-      return getMaybeAst(producer);
+      return fakerGenerator.helpers.maybe(producer)
   }
 }

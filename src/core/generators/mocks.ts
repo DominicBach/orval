@@ -1,16 +1,11 @@
-import { OpenAPIObject, SchemaObject } from 'openapi3-ts';
-import { generalJSTypesWithArray } from '../../constants';
-import {
-  ContextSpecs,
-  MockOptions,
-  NormalizedOverrideOutput,
-} from '../../types';
-import { GeneratorImport } from '../../types/generator';
-import { GetterResponse } from '../../types/getters';
-import { isFunction } from '../../utils/is';
-import { stringify } from '../../utils/string';
-import { getMockScalar } from '../getters/scalar.mock';
-import { resolveRef } from '../resolvers/ref';
+import {OpenAPIObject, SchemaObject} from 'openapi3-ts';
+import {generalJSTypesWithArray} from '../../constants';
+import {ContextSpecs, MockOptions, NormalizedOverrideOutput,} from '../../types';
+import {GeneratorImport} from '../../types/generator';
+import {GetterResponse} from '../../types/getters';
+import {isFunction} from '../../utils/is';
+import {stringify} from '../../utils/string';
+import {resolveRef} from '../resolvers/ref';
 import {ReferenceResolver} from "../experimental/ReferenceResolver";
 import {ValueFactory} from "../experimental/ValueFactory";
 import {convertAstToString} from "../experimental/AstStringGenerator";

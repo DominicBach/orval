@@ -1,6 +1,5 @@
 import {
   ArrowFunction,
-  CallExpression,
   Expression,
   factory,
   ObjectLiteralExpression,
@@ -8,106 +7,40 @@ import {
   SyntaxKind
 } from "typescript";
 
-/**
- * AST for `faker.helpers.maybe(producer)`
- */
-export function getMaybeAst(producer: ArrowFunction, config?: ObjectLiteralExpression) {
-  return factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-          factory.createPropertyAccessExpression(
-              factory.createIdentifier('faker'),
-              factory.createIdentifier('helpers')
-          ),
-          factory.createIdentifier('maybe')
-      ),
-      undefined,
-      config ? [producer, config] : [producer]
-  )
-}
+export function toCallExpression(expression: string, ...args: Array<Expression | SimpleType>) {
+  const identifiers = expression.split('.')
+  .map(identifier => factory.createIdentifier(identifier));
 
-/**
- * AST for `faker.helpers.arrayElement(array)`
- */
-export function getRandomArrayElementAst(array: Expression) {
-  return factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-          factory.createPropertyAccessExpression(
-              factory.createIdentifier('faker'),
-              factory.createIdentifier('helpers')
-          ),
-          factory.createIdentifier('arrayElement')
-      ),
-      undefined,
-      [array]
-  )
-}
-
-/**
- * AST for `faker.datatype.boolean()`
- */
-export function getRandomBooleanAst(): CallExpression {
-  return factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-          factory.createPropertyAccessExpression(
-              factory.createIdentifier('faker'),
-              factory.createIdentifier('datatype')
-          ),
-          factory.createIdentifier('boolean')
-      ),
-      undefined,
-      undefined
-  )
-}
-
-/**
- * AST for `faker.random.word()`
- */
-export function getRandomWordAst(): CallExpression {
-  return factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-          factory.createPropertyAccessExpression(
-              factory.createIdentifier('faker'),
-              factory.createIdentifier('random')
-          ),
-          factory.createIdentifier('word')
-      ),
-      undefined,
-      undefined
-  )
-}
-
-/**
- * AST for `faker.random.alphaNumeric(args)`
- */
-export function getRandomAlphanumericAst(args?: Expression): CallExpression {
-  return factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-          factory.createPropertyAccessExpression(
-              factory.createIdentifier('faker'),
-              factory.createIdentifier('random')
-          ),
-          factory.createIdentifier('alphaNumeric')
-      ),
-      undefined,
-      args ? [args] : []
-  )
-}
-
-/**
- * AST for faker.datatype.number(args)
- */
-export function getRandomNumberAst(args?: Expression): CallExpression {
-  return factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-          factory.createPropertyAccessExpression(
-              factory.createIdentifier('faker'),
-              factory.createIdentifier('datatype')
-          ),
-          factory.createIdentifier('number')
-      ),
-      undefined,
-      args ? [args] : []
+  let accessExpression = factory.createPropertyAccessExpression(
+      identifiers[0], identifiers[1]
   );
+  for (let i = 2; i < identifiers.length; i++) {
+    accessExpression = factory.createPropertyAccessExpression(
+        accessExpression, identifiers[i]
+    )
+  }
+
+  let simplifiedArgs: typeof args = [];
+  // Simplify the call expression by omitting any 'undefined' args passed at the end
+  for (let i = args.length - 1; i >= 0; i--) {
+    // As soon as we encounter a defined arg, include the whole array to that point
+    if (args[i] !== undefined) {
+      simplifiedArgs = args.slice(0, i + 1);
+    }
+  }
+
+  // Convert any remaining 'undefined' args to the undefined identifier expression
+  const expressionArgs = simplifiedArgs.map(arg => {
+    if (typeof arg === 'object' && arg !== null) {
+      return arg;
+    }
+    return getSimpleTypeLiteral(arg);
+  });
+
+  return factory.createCallExpression(
+      accessExpression,
+      undefined,
+      expressionArgs);
 }
 
 /**
@@ -117,7 +50,7 @@ export function getRandomNumberAst(args?: Expression): CallExpression {
  */
 export function getProducerFunction(expression: Expression): ArrowFunction {
   let wrappedExpression = expression;
-  if(expression.kind === SyntaxKind.ObjectLiteralExpression) {
+  if (expression.kind === SyntaxKind.ObjectLiteralExpression) {
     wrappedExpression = factory.createParenthesizedExpression(expression);
   }
   return factory.createArrowFunction(
@@ -131,10 +64,13 @@ export function getProducerFunction(expression: Expression): ArrowFunction {
 }
 
 type SimpleType = string | boolean | number | null | undefined;
+
 interface SimpleObject<T> {
   [key: string]: SimpleType | T
 }
-interface NestableSimpleObject extends SimpleObject<NestableSimpleObject> {}
+
+export interface NestableSimpleObject extends SimpleObject<NestableSimpleObject> {
+}
 
 /**
  * Convert an object into AST that generates a literal of that object.
@@ -144,11 +80,11 @@ interface NestableSimpleObject extends SimpleObject<NestableSimpleObject> {}
  */
 export function getObjectLiteralAst(object: NestableSimpleObject, excludeUndefined = false): ObjectLiteralExpression {
   const props: PropertyAssignment[] = [];
-  for(const [key, value] of Object.entries(object)) {
-    if(excludeUndefined && value === undefined) {
+  for (const [key, value] of Object.entries(object)) {
+    if (excludeUndefined && value === undefined) {
       continue;
     }
-    if(typeof value === 'object' && value !== null) {
+    if (typeof value === 'object' && value !== null) {
       props.push(factory.createPropertyAssignment(key, getObjectLiteralAst(value)))
     } else {
       props.push(factory.createPropertyAssignment(key, getSimpleTypeLiteral(value)))
@@ -158,7 +94,7 @@ export function getObjectLiteralAst(object: NestableSimpleObject, excludeUndefin
 }
 
 export function getSimpleTypeLiteral(value: SimpleType) {
-  if(value === null) {
+  if (value === null) {
     return factory.createNull();
   }
   switch (typeof value) {
@@ -183,7 +119,7 @@ type ExpressionObject = Record<string, Expression>;
  */
 export function getExpressionObjectAst(object: ExpressionObject): ObjectLiteralExpression {
   const props = Object.entries(object)
-  .map(([key,value]) => factory.createPropertyAssignment(key, value))
+  .map(([key, value]) => factory.createPropertyAssignment(key, value))
   return factory.createObjectLiteralExpression(props);
 }
 

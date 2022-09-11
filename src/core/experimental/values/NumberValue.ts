@@ -1,5 +1,5 @@
 import {Value} from "./Value";
-import {getObjectLiteralAst, getRandomNumberAst} from "../AstGenerators";
+import {fakerGenerator} from "../FakerGenerator";
 
 export interface NumberValueValidations {
   minimum?: number,
@@ -36,13 +36,13 @@ export class NumberValue implements Value {
 
   getGeneratorAst() {
     if(this.minimum !== undefined || this.maximum !== undefined) {
-      return getRandomNumberAst(getObjectLiteralAst({
+      return fakerGenerator.datatype.number({
         min: this.minimum,
         max: this.maximum,
         precision: this.precision
-      }, true));
+      });
     } else {
-      return getRandomNumberAst();
+      return fakerGenerator.datatype.number();
     }
   }
 }

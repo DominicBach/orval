@@ -1,7 +1,7 @@
 import {ObjectValue} from "./ObjectValue";
 import {Expression, factory} from "typescript";
-import {getRandomArrayElementAst} from "../AstGenerators";
 import {Value} from "./Value";
+import {fakerGenerator} from "../FakerGenerator";
 
 export class PolymorphicType implements ObjectValue {
 
@@ -13,7 +13,7 @@ export class PolymorphicType implements ObjectValue {
 
   getGeneratorAst(): Expression {
     const subtypesAst = factory.createArrayLiteralExpression(this.subtypes.map(t => t.getGeneratorAst()))
-    return getRandomArrayElementAst(subtypesAst);
+    return fakerGenerator.helpers.arrayElement(subtypesAst);
   }
 
   partial(): PolymorphicType {

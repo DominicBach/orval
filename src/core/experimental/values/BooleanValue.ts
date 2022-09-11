@@ -1,9 +1,9 @@
 import {Value} from "./Value";
-import {getRandomBooleanAst} from "../AstGenerators";
+import {fakerGenerator} from "../FakerGenerator";
 
 export class BooleanValue implements Value {
 
   getGeneratorAst() {
-    return getRandomBooleanAst();
+    return fakerGenerator.datatype.boolean();
   }
 }

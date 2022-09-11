@@ -1,7 +1,7 @@
 import {Value} from "./Value";
-import {getRandomArrayElementAst} from "../AstGenerators";
 import {factory} from "typescript";
 import {NullValue} from "./NullValue";
+import {fakerGenerator} from "../FakerGenerator";
 
 export class Nullable<T extends Value> implements Value {
 
@@ -16,7 +16,7 @@ export class Nullable<T extends Value> implements Value {
         this.value.getGeneratorAst(),
         new NullValue().getGeneratorAst()
     ])
-    return getRandomArrayElementAst(valueOrNull)
+    return fakerGenerator.helpers.arrayElement(valueOrNull)
   }
 
 

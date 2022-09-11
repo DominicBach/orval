@@ -1,12 +1,7 @@
 import {Value} from "./Value";
-import {
-  getArrayGeneratorAst,
-  getExpressionObjectAst,
-  getObjectLiteralAst,
-  getProducerFunction,
-  getRandomNumberAst
-} from "../AstGenerators";
+import {getArrayGeneratorAst, getExpressionObjectAst, getProducerFunction} from "../AstGenerators";
 import {factory} from "typescript";
+import {fakerGenerator} from "../FakerGenerator";
 
 export class ArrayValue implements Value {
   readonly items?: Value;
@@ -21,10 +16,10 @@ export class ArrayValue implements Value {
 
   getGeneratorAst() {
     if(this.items) {
-      const arrayLengthGenerator = getRandomNumberAst(getObjectLiteralAst({
+      const arrayLengthGenerator = fakerGenerator.datatype.number({
         min: this.minItems,
         max: this.maxItems
-      }, true));
+      })
       const arrayLengthArg = getExpressionObjectAst({length: arrayLengthGenerator});
       const itemGenerator = getProducerFunction(this.items.getGeneratorAst());
       return getArrayGeneratorAst(arrayLengthArg, itemGenerator);
